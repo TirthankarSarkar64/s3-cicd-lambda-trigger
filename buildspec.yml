@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    # Relative path to this project inside the repository checked out by CodeBuild.
+    APP_DIR: .
+    # Lambda settings that stay the same for both dev and prod.
+    LAMBDA_HANDLER: lambda_function.lambda_handler
+    LAMBDA_RUNTIME: python3.12
+    LAMBDA_TIMEOUT: "60"
+    LAMBDA_MEMORY: "512"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      # Print tool versions early so the build log shows the runtime used.
+      - python --version
+      - aws --version
+
+  pre_build:
+    commands:
+      # Log the branch reference because the deploy script uses it to decide
+      # whether this run targets dev or prod.
+      - echo "Source version -> $CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - echo "Webhook ref   -> $CODEBUILD_WEBHOOK_HEAD_REF"
+      - chmod +x "$CODEBUILD_SRC_DIR/$APP_DIR/scripts/deploy_lambda.sh"
+
+  build:
+    commands:
+      - cd "$CODEBUILD_SRC_DIR/$APP_DIR"
+      # Package and deploy the correct Lambda based on the branch name.
+      - ./scripts/deploy_lambda.sh
+
+artifacts:
+  files:
+    # Keep the packaged zip as a build artifact for troubleshooting.
+    # No Ops Changes New
+    - deployment_package.zip
+    - buildspec.yml

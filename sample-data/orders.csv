@@ -1,0 +1,4 @@
+order_id,customer_name,product,quantity,price
+1001,Alice,Keyboard,1,49.99
+1002,Bob,Mouse,2,19.99
+1003,Charlie,Monitor,1,199.99
